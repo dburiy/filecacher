@@ -16,5 +16,8 @@
             "email": "dburiy@gmail.com",
             "role": "Developer"
         }
-    ]
+    ],
+    "require-dev": {
+        "phpstan/phpstan-shim": "^0.11.5"
+    }
 }
