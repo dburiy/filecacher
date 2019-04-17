@@ -1,0 +1,6 @@
+language: php
+script:
+  - composer install
+  - vendor/bin/phpstan.phar analyse -l max -c phpstan.neon src --no-interaction --no-progress
+before_script:
+  - phpenv config-rm xdebug.ini || return 0
