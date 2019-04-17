@@ -11,7 +11,7 @@ $ composer require dburiy/filecacher
 
 #### Init
 ```
-$cacher_dir = dirname(__FILE__).'/cacher'; 
+$cacher_dir = __DIR__ . '/cacher'; 
 $cacher = new \Dburiy\FileCacher($cacher_dir);
 ```
 

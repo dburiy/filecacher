@@ -10,16 +10,16 @@ class FileCacher
     /**
      * FileCacher constructor.
      *
-     * @param $path
+     * @param string $path
      * @param int $mode
      *
      * @throws \Exception
      */
-    public function __construct($path, $mode = 0777)
+    public function __construct(string $path, int $mode = 0777)
     {
-        $this->dir  = $path;
+        $this->dir = $path;
         $this->mode = $mode;
-        if (!file_exists($this->dir) && !mkdir($this->dir, $this->mode, true)) {
+        if (!is_dir($this->dir) && !@mkdir($this->dir, $this->mode, true)) {
             throw new \Exception("Can't create cache director: {$this->dir}");
         }
     }
@@ -27,11 +27,11 @@ class FileCacher
     /**
      * Delete cache file by key
      *
-     * @param $key
+     * @param string $key
      *
      * @return bool
      */
-    public function remove($key)
+    public function remove(string $key)
     {
         $filename = $this->getFilename($key);
 
@@ -41,12 +41,12 @@ class FileCacher
     /**
      * Get value
      *
-     * @param $key
-     * @param null $default
+     * @param string $key
+     * @param mixed $default
      *
      * @return mixed|null
      */
-    public function get($key, $default = null)
+    public function get(string $key, $default = null)
     {
         $result   = '';
         $filename = $this->getFilename($key);
@@ -69,44 +69,44 @@ class FileCacher
                 $result .= $str;
             }
             fclose($h);
-            if ($meta && $meta['serialize']) {
+            if ($meta && $meta['serialized']) {
                 $result = unserialize($result);
             }
         } catch (\Exception $e) {
             // can't get cache from file. return default value
         }
 
-        return $result ? : (is_callable($default) ? call_user_func($default) : $default);
+        return $result ?: (is_callable($default) ? call_user_func($default) : $default);
     }
 
     /**
      * Set value
      *
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param mixed $value
      * @param int $lifetime
      *
      * @return $this
      * @throws \Exception
      */
-    public function set($key, $value, $lifetime = 0)
+    public function set(string $key, $value, int $lifetime = 0)
     {
         $filename = $this->getFilename($key);
-        $expire   = $lifetime ? microtime(true) + (int)$lifetime : 0;
+        $expire = $lifetime ? microtime(true) + (int)$lifetime : 0;
         if (!file_exists($filename)) {
             $dir = dirname($filename);
-            if (!is_dir($dir) && !mkdir($dir, $this->mode, true)) {
+            if (!is_dir($dir) && !@mkdir($dir, $this->mode, true)) {
                 throw new \Exception("Can't create cache director: {$dir}");
             }
         }
 
-        $serialize = !is_string($value);
-        if ($serialize) {
+        $is_serialize = !is_string($value);
+        if ($is_serialize) {
             $value = serialize($value);
         }
 
-        $meta = json_encode(['expire' => $expire, 'time' => time(), 'serialize' => $serialize], 1);
-        $h    = fopen($filename, 'w');
+        $meta = json_encode(['expire' => $expire, 'time' => time(), 'serialized' => $is_serialize], 1);
+        $h = fopen($filename, 'w');
         fwrite($h, $meta . PHP_EOL . $value);
         fclose($h);
 
@@ -114,22 +114,18 @@ class FileCacher
     }
 
     /**
-     * @param $key
-     * @param $lifetime
-     * @param null $default
+     * @param string $key
+     * @param int $lifetime
+     * @param mixed $default
      *
      * @return mixed|null
      * @throws \Exception
      */
-    public function cache($key, $lifetime, $default = null)
+    public function cache(string $key, int $lifetime, $default = null)
     {
         $data = $this->get($key);
         if (is_null($data)) {
-            if (is_callable($default)) {
-                $data = call_user_func($default);
-            } else {
-                $data = $default;
-            }
+            $data = is_callable($default) ? call_user_func($default) : $default;
             if (!is_null($data)) {
                 $this->set($key, $data, $lifetime);
             }
@@ -141,11 +137,11 @@ class FileCacher
     /**
      * Get meta by cache key
      *
-     * @param $key
+     * @param string $key
      *
-     * @return bool|mixed
+     * @return mixed
      */
-    private function getMeta($key)
+    private function getMeta(string $key)
     {
         $filename = $this->getFilename($key);
 
@@ -167,11 +163,11 @@ class FileCacher
     /**
      * Get meta from file
      *
-     * @param $filename
+     * @param string $filename
      *
      * @return array
      */
-    private function getMetaFromFile($filename)
+    private function getMetaFromFile(string $filename)
     {
         try {
             if (!file_exists($filename)) {
@@ -199,24 +195,28 @@ class FileCacher
      * @return bool
      * @throws \Exception
      */
-    public function clean($folder = '')
+    public function clean(string $folder = '')
     {
         $folder = $folder ? $folder : $this->dir;
         $dirs   = scandir($folder, 1);
         $files  = count($dirs) - 2;
         foreach ($dirs as $name) {
-            if (!in_array($name, ['.', '..'])) {
-                if (is_dir($folder . '/' . $name)) {
-                    if ($this->clean($folder . '/' . $name)) {
-                        --$files;
-                    }
-                } else if (($meta = $this->getMetaFromFile($filename = $folder . '/' . $name))
-                           && $meta['expire'] != 0
-                           && ($meta['expire'] < microtime(true))) {
+            if (in_array($name, ['.', '..'])) {
+                continue;
+            }
+            if (is_dir($folder . '/' . $name)) {
+                if ($this->clean($folder . '/' . $name)) {
+                    --$files;
+                }
+                continue;
+            }
+            $meta = $this->getMetaFromFile($filename = $folder . '/' . $name);
+            if ($meta && ($meta['expire'] != 0)
+                && ($meta['expire'] < microtime(true))) {
 
-                    if (!@unlink($filename) && file_exists($filename)) {
-                        throw new \Exception("Can't delete old cache file {$filename}");
-                    }
+                @unlink($filename);
+                if (file_exists($filename)) {
+                    throw new \Exception("Can't delete old cache file {$filename}");
                 }
             }
         }
