@@ -107,6 +107,9 @@ class FileCacher
 
         $meta = json_encode(['expire' => $expire, 'time' => time(), 'serialized' => $is_serialize], 1);
         $h = fopen($filename, 'w');
+        if (!$h) {
+            throw new \Exception("Can't create cache file: {$filename}");
+        }
         fwrite($h, $meta . PHP_EOL . $value);
         fclose($h);
 
@@ -151,11 +154,11 @@ class FileCacher
     /**
      * Get filename by key
      *
-     * @param $key
+     * @param string $key
      *
      * @return mixed
      */
-    private function getFilename($key)
+    private function getFilename(string $key)
     {
         return str_replace('//', '/', $this->dir . '/' . str_replace('_', '/', $key));
     }
@@ -177,8 +180,8 @@ class FileCacher
             if (!$fh) {
                 throw new \Exception("can't open file {$filename}");
             }
-            $line   = fgets($fh);
-            $result = json_decode($line, true);
+            $line = fgets($fh);
+            $result = $line ? json_decode($line, true) : '';
             fclose($fh);
         } catch (\Exception $e) {
             $result = [];
@@ -198,30 +201,33 @@ class FileCacher
     public function clean(string $folder = '')
     {
         $folder = $folder ? $folder : $this->dir;
-        $dirs   = scandir($folder, 1);
-        $files  = count($dirs) - 2;
-        foreach ($dirs as $name) {
-            if (in_array($name, ['.', '..'])) {
-                continue;
-            }
-            if (is_dir($folder . '/' . $name)) {
-                if ($this->clean($folder . '/' . $name)) {
-                    --$files;
+        $dirs = scandir($folder, 1);
+        $files = 0;
+        if ($dirs) {
+            $files = count($dirs) - 2;
+            foreach ($dirs as $name) {
+                if (in_array($name, ['.', '..'])) {
+                    continue;
                 }
-                continue;
-            }
-            $meta = $this->getMetaFromFile($filename = $folder . '/' . $name);
-            if ($meta && ($meta['expire'] != 0)
-                && ($meta['expire'] < microtime(true))) {
+                if (is_dir($folder . '/' . $name)) {
+                    if ($this->clean($folder . '/' . $name)) {
+                        --$files;
+                    }
+                    continue;
+                }
+                $meta = $this->getMetaFromFile($filename = $folder . '/' . $name);
+                if ($meta && ($meta['expire'] != 0)
+                    && ($meta['expire'] < microtime(true))) {
 
-                @unlink($filename);
-                if (file_exists($filename)) {
-                    throw new \Exception("Can't delete old cache file {$filename}");
+                    @unlink($filename);
+                    if (file_exists($filename)) {
+                        throw new \Exception("Can't delete old cache file {$filename}");
+                    }
                 }
             }
-        }
-        if (!$files && ($this->dir != $folder)) {
-            @rmdir($folder);
+            if (!$files && ($this->dir != $folder)) {
+                @rmdir($folder);
+            }
         }
 
         return !$files;
