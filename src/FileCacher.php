@@ -30,12 +30,16 @@ class FileCacher
      * @param string $key
      *
      * @return bool
+     * @throws \Exception
      */
     public function remove(string $key)
     {
         $filename = $this->getFilename($key);
+        if (file_exists($filename) && !unlink($filename)) {
+            throw new \Exception("Can't remove cache file {$filename}");
+        }
 
-        return file_exists($filename) ? unlink($filename) : true;
+        return true;
     }
 
     /**
@@ -95,7 +99,7 @@ class FileCacher
         $expire = $lifetime ? microtime(true) + (int)$lifetime : 0;
         if (!file_exists($filename)) {
             $dir = dirname($filename);
-            if (!is_dir($dir) && !@mkdir($dir, $this->mode, true)) {
+            if (!is_dir($dir) && !mkdir($dir, $this->mode, true)) {
                 throw new \Exception("Can't create cache director: {$dir}");
             }
         }
@@ -219,14 +223,13 @@ class FileCacher
                 if ($meta && ($meta['expire'] != 0)
                     && ($meta['expire'] < microtime(true))) {
 
-                    @unlink($filename);
-                    if (file_exists($filename)) {
+                    if (file_exists($filename) && !unlink($filename)) {
                         throw new \Exception("Can't delete old cache file {$filename}");
                     }
                 }
             }
             if (!$files && ($this->dir != $folder)) {
-                @rmdir($folder);
+                rmdir($folder);
             }
         }
 
