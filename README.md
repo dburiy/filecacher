@@ -1,4 +1,5 @@
-# FileCacher class
+# FileCacher class 
+[![Build Status](https://travis-ci.org/dburiy/filecacher.svg?branch=master)](https://travis-ci.org/dburiy/filecacher)
 
 ## Install 
 The recommended way to install this package is through Composer:
