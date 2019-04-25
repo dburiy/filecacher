@@ -1,4 +1,5 @@
 # FileCacher class 
+[![Gitter](https://badges.gitter.im/dburiy-filecacher/community.svg)](https://gitter.im/dburiy-filecacher/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build Status](https://travis-ci.org/dburiy/filecacher.svg?branch=master)](https://travis-ci.org/dburiy/filecacher)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
