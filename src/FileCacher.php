@@ -31,8 +31,27 @@ class FileCacher
      *
      * @return bool
      * @throws \Exception
+     * @deprecated use delete method
      */
     public function remove(string $key)
+    {
+        $filename = $this->getFilename($key);
+        if (file_exists($filename) && !unlink($filename)) {
+            throw new \Exception("Can't remove cache file {$filename}");
+        }
+
+        return true;
+    }
+
+    /**
+     * Delete cache file by key
+     *
+     * @param string $key
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function delete(string $key)
     {
         $filename = $this->getFilename($key);
         if (file_exists($filename) && !unlink($filename)) {
