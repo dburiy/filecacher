@@ -257,8 +257,8 @@ class FileCacher
     /**
      * Create dir with change permission
      *
-     * @param $dir
-     * @param $perm
+     * @param string $dir
+     * @param int $perm
      * @return bool
      */
     private function mkdir($dir, $perm)
