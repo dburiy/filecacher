@@ -19,7 +19,7 @@ class FileCacher
     {
         $this->dir = $path;
         $this->mode = $mode;
-        if (!is_dir($this->dir) && !@mkdir($this->dir, $this->mode, true)) {
+        if (!$this->mkdir($this->dir, $this->mode)) {
             throw new \Exception("Can't create cache director: {$this->dir}");
         }
     }
@@ -118,16 +118,14 @@ class FileCacher
         $expire = $lifetime ? microtime(true) + (int)$lifetime : 0;
         if (!file_exists($filename)) {
             $dir = dirname($filename);
-            if (!is_dir($dir) && !mkdir($dir, $this->mode, true)) {
+            if (!$this->mkdir($dir, $this->mode)) {
                 throw new \Exception("Can't create cache director: {$dir}");
             }
         }
-
         $is_serialize = !is_string($value);
         if ($is_serialize) {
             $value = serialize($value);
         }
-
         $meta = json_encode(['expire' => $expire, 'time' => time(), 'serialized' => $is_serialize], 1);
         $h = fopen($filename, 'w');
         if (!$h) {
@@ -135,6 +133,7 @@ class FileCacher
         }
         fwrite($h, $meta . PHP_EOL . $value);
         fclose($h);
+        chmod($filename, $this->mode);
 
         return $this;
     }
@@ -253,5 +252,22 @@ class FileCacher
         }
 
         return !$files;
+    }
+
+    /**
+     * Create dir with change permission
+     *
+     * @param $dir
+     * @param $perm
+     * @return bool
+     */
+    private function mkdir($dir, $perm)
+    {
+        if (!is_dir($dir)) {
+            if (mkdir($dir, $perm, true)) {
+                chmod($dir, $perm);
+            }
+        }
+        return is_dir($dir);
     }
 }
