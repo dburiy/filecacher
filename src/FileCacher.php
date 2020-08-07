@@ -64,6 +64,7 @@ class FileCacher
             if ($h === false) {
                 throw new \Exception("file not readable {$filename}");
             }
+            $result = '';
             fgets($h); // read meta from first line
             while (!feof($h)) {
                 $result .= fgets($h);
@@ -81,7 +82,7 @@ class FileCacher
 
     /**
      * @param string $key
-     * @param $value
+     * @param mixed $value
      * @param int $lifetime
      *
      * @return bool
@@ -118,8 +119,7 @@ class FileCacher
      * Get filename by key
      *
      * @param string $key
-     *
-     * @return mixed
+     * @return string
      */
     private function getFilename(string $key): string
     {
