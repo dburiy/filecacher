@@ -44,17 +44,6 @@ $cacher->get("key", $callback); # return timestamp
 
 #### Remove data
 ```
-$cacher->remove("key");
-```
-
-#### Use `cache` method
-```
-$lifetime = 50;
-$data = $cacher->cache('key1', $lifetime, function(){
-    return time();
-});
-
-# if cache with `key1` exist then return cache 
-# else return default value and stored it to cache
+$cacher->delete("key");
 ```
 
