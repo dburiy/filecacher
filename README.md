@@ -7,7 +7,7 @@
 The recommended way to install this package is through Composer:
 
 ```
-$ composer require dburiy/filecacher
+$ composer require dburiy/filecacher 1.0.4
 ```
 
 ## How to use
