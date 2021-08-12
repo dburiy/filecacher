@@ -144,10 +144,10 @@ class FileCacher
             return [];
         }
         $line = fgets($fh);
-        $result = $line ? json_decode($line, true) : '';
+        $result = $line ? json_decode($line, true) : [];
         fclose($fh);
 
-        return $result;
+        return $result ? $result : [];
     }
 
     /**

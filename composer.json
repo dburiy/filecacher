@@ -2,7 +2,7 @@
     "name": "dburiy/filecacher",
     "description": "Simple php file cacher",
     "type": "library",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "license": "MIT",
     "require": {
         "php": "^7.2",
