@@ -4,7 +4,14 @@ namespace Dburiy;
 
 class FileCacher
 {
-    private $dir = '';
+    /**
+     * @var string
+     */
+    private $dir;
+
+    /**
+     * @var int
+     */
     private $mode;
 
     /**
@@ -130,10 +137,9 @@ class FileCacher
      * Get meta from file
      *
      * @param string $filename
-     *
-     * @return array
+     * @return array|mixed
      */
-    private function getMeta(string $filename): array
+    public function getMeta(string $filename)
     {
         if (!file_exists($filename)) {
             return [];
@@ -147,7 +153,7 @@ class FileCacher
         $result = $line ? json_decode($line, true) : [];
         fclose($fh);
 
-        return $result ? $result : [];
+        return is_array($result) ? $result : [];
     }
 
     /**
@@ -158,7 +164,7 @@ class FileCacher
      */
     public function clean(string $folder = ''): bool
     {
-        $folder = $folder ? $folder : $this->dir;
+        $folder = $folder ?: $this->dir;
         $dirs = scandir($folder, 1);
         $files = 0;
         if ($dirs) {

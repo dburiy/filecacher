@@ -1,8 +1,15 @@
 {
+    "authors": [
+        {
+            "name": "Buriy Dima",
+            "email": "dburiy@gmail.com",
+            "role": "Developer"
+        }
+    ],
     "name": "dburiy/filecacher",
     "description": "Simple php file cacher",
     "type": "library",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "license": "MIT",
     "require": {
         "php": "^7.2",
@@ -11,14 +18,10 @@
     "autoload": {
         "psr-4": {"Dburiy\\": "src"}
     },
-    "authors": [
-        {
-            "name": "Buriy Dima",
-            "email": "dburiy@gmail.com",
-            "role": "Developer"
-        }
-    ],
     "require-dev": {
-        "phpstan/phpstan-shim": "^0.11.5"
+        "phpstan/phpstan": "^0.12.99"
+    },
+    "scripts": {
+        "phpstan": "phpstan analyse -c phpstan.neon"
     }
 }
