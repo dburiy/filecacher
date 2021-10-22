@@ -1,6 +1,7 @@
 language: php
 script:
   - composer install
-  - vendor/bin/phpstan.phar analyse -c phpstan.neon --no-interaction --no-progress
+  - vendor/bin/phpstan.phar analyse -l 5 -c phpstan.neon src --no-interaction --no-progress
+  - vendor/bin/phpunit tests --bootstrap vendor/autoload.php
 before_script:
   - phpenv config-rm xdebug.ini || return 0
