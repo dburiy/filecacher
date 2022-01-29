@@ -6,7 +6,7 @@
 The recommended way to install this package is through Composer:
 
 ```
-$ composer require dburiy/filecacher 1.0.4
+$ composer require dburiy/filecacher
 ```
 
 ## How to use
@@ -45,4 +45,33 @@ $cacher->get("key", $callback); # return timestamp
 ```
 $cacher->delete("key");
 ```
+
+## With PSR
+
+```
+use Dburiy\FileCacher;
+use Dburiy\PsrBridge\FileCacher as PsrCacher;
+
+include __DIR__ . '/../vendor/autoload.php';
+
+$cacher = new PsrCacher(new FileCacher(__DIR__ . '/cache'));
+
+$item = $cacher
+    ->getItem('test')
+    ->expiresAfter(DateInterval::createFromDateString('1 min'))
+//    ->expiresAfter(10) // seconds
+//    ->expiresAt(new DateTime('2022-01-29T13:02:00', new DateTimeZone('europe/moscow')))
+    ->set(['value' => time()])
+;
+$cacher->save($item);
+//$cacher->saveDeferred($item);
+//$cacher->commit();
+
+var_dump($item->get());
+
+if (!$item->isHit()) {
+    $cacher->deleteItem('test');
+}
+```
+
 
