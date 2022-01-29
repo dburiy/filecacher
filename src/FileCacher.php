@@ -47,14 +47,12 @@ class FileCacher
     }
 
     /**
-     * Get value
-     *
      * @param string $key
      * @param mixed $default
-     *
-     * @return mixed|null
+     * @param bool $return_if_isset
+     * @return false|mixed|string|null
      */
-    public function get(string $key, $default = null)
+    public function get(string $key, $default = null, bool $return_if_isset = false)
     {
         $result = null;
         $filename = $this->getFilename($key);
@@ -63,7 +61,12 @@ class FileCacher
                 throw new \Exception("file not found {$filename}");
             }
             $meta = $this->getMeta($filename);
-            if ($meta && $meta['ex'] != 0 && ($meta['ex'] < microtime(true))) {
+            if (
+                $meta
+                && $meta['ex'] != 0
+                && ($meta['ex'] < microtime(true))
+                && ($return_if_isset === false)
+            ) {
                 unlink($filename);
                 throw new \Exception("file expire {$filename}");
             }
@@ -85,6 +88,15 @@ class FileCacher
         }
 
         return !is_null($result) ? $result : (is_callable($default) ? call_user_func($default) : $default);
+    }
+
+    /**
+     * @param string $key
+     * @return bool
+     */
+    public function hasItem(string $key): bool
+    {
+        return file_exists($this->getFilename($key));
     }
 
     /**
@@ -143,6 +155,30 @@ class FileCacher
     {
         if (!file_exists($filename)) {
             return [];
+        }
+        $fh = fopen($filename, 'r');
+        if (!$fh) {
+            trigger_error("can't open file {$filename}", E_USER_WARNING);
+            return [];
+        }
+        $line = fgets($fh);
+        $result = $line ? json_decode($line, true) : [];
+        fclose($fh);
+
+        return is_array($result) ? $result : [];
+    }
+
+    /**
+     * Get meta from file
+     *
+     * @param string $key
+     * @return array|mixed
+     */
+    public function getMetaByKey(string $key)
+    {
+        $filename = $this->getFilename($key);
+        if (!file_exists($filename)) {
+            return null;
         }
         $fh = fopen($filename, 'r');
         if (!$fh) {
