@@ -1,7 +1,7 @@
 # FileCacher class 
 [![Total Downloads](https://poser.pugx.org/dburiy/filecacher/d/total.png)](https://packagist.org/packages/dburiy/filecacher/stats)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
+![visitor badge](https://visitor-badge.glitch.me/badge?page_id=dburiy.filecacher)
 ## Install 
 The recommended way to install this package is through Composer:
 
